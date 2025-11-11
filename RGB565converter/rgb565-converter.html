@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to RGB565 Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area:hover {
+            background: #eef1ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area.dragover {
+            background: #e0e7ff;
+            border-color: #4338ca;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .preview-section, .code-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .preview-img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .info {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        
+        .info p {
+            margin: 8px 0;
+            color: #555;
+        }
+        
+        .warning {
+            color: #d97706;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #1e293b;
+            color: #10b981;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 15px;
+            resize: vertical;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-download {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #5568d3;
+        }
+        
+        .btn-copy {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-copy:hover {
+            background: #4b5563;
+        }
+        
+        .instructions {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+            color: #374151;
+        }
+        
+        code {
+            background: #bfdbfe;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .results {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Image to RGB565 Converter</h1>
+        <p class="subtitle">Convert images to Arduino RGB565 arrays for LovyanGFX</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📤</div>
+            <p style="font-size: 1.1em; margin-bottom: 10px;"><strong>Click to upload</strong> or drag and drop</p>
+            <p style="color: #666; font-size: 0.9em;">PNG, JPG, GIF, BMP (any size)</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div id="results" class="results hidden">
+            <div class="preview-section">
+                <h2>Preview</h2>
+                <img id="preview" class="preview-img" alt="Preview">
+                <div class="info">
+                    <p><strong>Dimensions:</strong> <span id="dimensions">-</span></p>
+                    <p><strong>Array Size:</strong> <span id="fileSize">-</span></p>
+                    <p id="warning" class="warning hidden">⚠️ Large file! Consider using SD card storage instead.</p>
+                </div>
+            </div>
+            
+            <div class="code-section">
+                <h2>Generated Code</h2>
+                <textarea id="codeOutput" readonly></textarea>
+                <div class="button-group">
+                    <button class="btn-download" id="downloadBtn">⬇️ Download .h File</button>
+                    <button class="btn-copy" id="copyBtn">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="instructions" class="instructions hidden">
+            <h3>How to Use in Arduino:</h3>
+            <ol>
+                <li>Download the generated .h file</li>
+                <li>Add it to your Arduino project folder</li>
+                <li>Include it in your sketch: <code>#include "<span id="fileName">image_data</span>.h"</code></li>
+                <li>Display with: <code>lcd.pushImage(0, 0, <span id="widthConst">IMAGE_WIDTH</span>, <span id="heightConst">IMAGE_HEIGHT</span>, <span id="arrayName">image_data</span>);</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const results = document.getElementById('results');
+        const preview = document.getElementById('preview');
+        const codeOutput = document.getElementById('codeOutput');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const instructions = document.getElementById('instructions');
+        
+        let currentImageName = 'image_data';
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImage(file);
+            }
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleImage(file);
+        });
+        
+        function handleImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    convertToRGB565(img, file.name);
+                    preview.src = e.target.result;
+                    results.classList.remove('hidden');
+                    instructions.classList.remove('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function convertToRGB565(img, filename) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, img.width, img.height);
+            const pixels = imageData.data;
+            const rgb565Array = [];
+            
+            for (let i = 0; i < pixels.length; i += 4) {
+                const r = pixels[i];
+                const g = pixels[i + 1];
+                const b = pixels[i + 2];
+                
+                // Convert RGB888 to RGB565
+                const rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+                rgb565Array.push(rgb565);
+            }
+            
+            const name = filename.split('.')[0].replace(/[^a-zA-Z0-9_]/g, '_');
+            currentImageName = name;
+            
+            const width = img.width;
+            const height = img.height;
+            const fileSizeKB = (rgb565Array.length * 2) / 1024;
+            
+            // Update UI
+            document.getElementById('dimensions').textContent = `${width}x${height}`;
+            document.getElementById('fileSize').textContent = `${fileSizeKB.toFixed(1)} KB`;
+            document.getElementById('warning').classList.toggle('hidden', fileSizeKB <= 500);
+            
+            // Update instructions
+            document.getElementById('fileName').textContent = `${name}_data`;
+            document.getElementById('widthConst').textContent = `${name.toUpperCase()}_WIDTH`;
+            document.getElementById('heightConst').textContent = `${name.toUpperCase()}_HEIGHT`;
+            document.getElementById('arrayName').textContent = `${name}_data`;
+            
+            // Generate code
+            generateCode(rgb565Array, width, height, name);
+        }
+        
+        function generateCode(array, width, height, name) {
+            let code = `// Image: ${name}\n`;
+            code += `// Size: ${width}x${height}\n`;
+            code += `// Array size: ${(array.length * 2 / 1024).toFixed(1)} KB\n\n`;
+            code += `#ifndef ${name.toUpperCase()}_H\n`;
+            code += `#define ${name.toUpperCase()}_H\n\n`;
+            code += `const int ${name.toUpperCase()}_WIDTH = ${width};\n`;
+            code += `const int ${name.toUpperCase()}_HEIGHT = ${height};\n\n`;
+            code += `const uint16_t ${name}_data[${array.length}] PROGMEM = {\n  `;
+            
+            for (let i = 0; i < array.length; i++) {
+                code += `0x${array[i].toString(16).padStart(4, '0').toUpperCase()}`;
+                if (i < array.length - 1) {
+                    code += ',';
+                    if ((i + 1) % 12 === 0) {
+                        code += '\n  ';
+                    } else {
+                        code += ' ';
+                    }
+                }
+            }
+            
+            code += '\n};\n\n';
+            code += `#endif\n`;
+            
+            codeOutput.value = code;
+        }
+        
+        // Download button
+        downloadBtn.addEventListener('click', () => {
+            const blob = new Blob([codeOutput.value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentImageName}_data.h`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        // Copy button
+        copyBtn.addEventListener('click', () => {
+            codeOutput.select();
+            document.execCommand('copy');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ Copied!';
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
