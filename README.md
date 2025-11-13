@@ -2,7 +2,7 @@
 
 A simple animated blinking eye display for circular SGC9A01 LCD panels using the LovyanGFX graphics library.
 
-Information about this project is avaible at **[Animating a Blinking Eye on an Arduino-Powered LCD Display](https://garrysblog.com/)**
+Information about this project is avaible at **[Animating a Blinking Eye on an Arduino-Powered LCD Display](https://garrysblog.com/2025/11/13/animating-a-blinking-eye-on-an-arduino-powered-lcd-display)**
 
 ## 🎬 Demo
 
